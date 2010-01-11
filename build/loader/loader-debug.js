@@ -1271,15 +1271,18 @@ Y.Loader.prototype = {
      */
     getRequires: function(mod) {
 
-        if (!mod) {
+        if (!mod || mod._parsed) {
             // Y.log('getRequires, no module');
             return [];
         }
+
 
         if (!this.dirty && mod.expanded) {
             // Y.log('already expanded');
             return mod.expanded;
         }
+
+        mod._parsed = true;
 
         var i, d=[], r=mod.requires, o=mod.optional, 
             info=this.moduleInfo, m, j, add;
@@ -1293,6 +1296,7 @@ Y.Loader.prototype = {
                 d.push(add[j]);
             }
         }
+
 
         // get the requirements from superseded modules, if any
         r=mod.supersedes;
@@ -1317,6 +1321,8 @@ Y.Loader.prototype = {
                 }
             }
         }
+
+        mod._parsed = false;
 
         mod.expanded = Y.Object.keys(Y.Array.hash(d));
         return mod.expanded;
