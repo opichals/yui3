@@ -94,7 +94,6 @@ if (typeof YUI === 'undefined' || !YUI) {
             return Y;
         }
     };
-}
 
 // The prototype contains the functions that are required to allow the external
 // modules to be registered and for the instance to be initialized.
@@ -671,6 +670,7 @@ YUI.prototype = {
      * @param
      * @return the event target or a detach handle per 'chain' config
      */
+}
 
 })();
 
