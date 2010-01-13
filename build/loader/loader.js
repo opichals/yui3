@@ -105,6 +105,7 @@ YUI.add('loader', function(Y) {
 YUI.Env._loaderQueue = YUI.Env._loaderQueue || new Y.Queue();
 
 var NOT_FOUND = {},
+    NO_REQUIREMENTS = [],
     GLOBAL_ENV = YUI.Env,
     GLOBAL_LOADED,
     BASE = 'base', 
@@ -1245,6 +1246,7 @@ Y.Loader.prototype = {
 
         this.dirty = true;
 
+
         return o;
     },
 
@@ -1268,13 +1270,13 @@ Y.Loader.prototype = {
     getRequires: function(mod) {
 
         if (!mod || mod._parsed) {
-            return [];
+            return NO_REQUIREMENTS;
         }
-
 
         if (!this.dirty && mod.expanded) {
             return mod.expanded;
         }
+
 
         mod._parsed = true;
 
@@ -1289,7 +1291,6 @@ Y.Loader.prototype = {
                 d.push(add[j]);
             }
         }
-
 
         // get the requirements from superseded modules, if any
         r=mod.supersedes;
@@ -1370,8 +1371,7 @@ Y.Loader.prototype = {
             this._reduce();
             this._sort();
 
-
-            this.dirty = false;
+            // this.dirty = false;
         }
     },
 
@@ -1454,6 +1454,9 @@ Y.Loader.prototype = {
 
         var r = this.required, m, reqs;
 
+        // the setup phase is over, all modules have been created
+        this.dirty = false;
+
         Y.Object.each(r, function(v, name) {
 
             m = this.getModule(name);
@@ -1477,13 +1480,44 @@ Y.Loader.prototype = {
     },
 
     getModule: function(name) {
+        //TODO: Remove name check - it's a quick hack to fix pattern WIP
+        if (!name) {
+            return null;
+        }
 
-        var m = this.moduleInfo[name];
+        var m = this.moduleInfo[name], i, patterns = this.patterns, p, type, add = false;
 
-        // create the default module
-        // if (!m) {
-            // m = this.addModule({ext: false}, name);
-        // }
+        // check the patterns library to see if we should automatically add
+        // the module with defaults
+        if (!m) {
+
+            for (i in patterns) {
+                p = patterns[i];
+                type = p.type;
+
+                // switch (type) {
+                    // case 'regex':
+                    //     break;
+                    // case 'function':
+                    //     break;
+                    // default: // prefix
+                    //     if (name.indexOf(i) > -1) {
+                    //         add = true;
+                    //     }
+                // }
+
+                // use the metadata supplied for the pattern
+                // as the module definition.
+                if (name.indexOf(i) > -1) {
+                    add = p;
+                }
+            }
+
+            if (add) {
+                // ext true or false?
+                m = this.addModule(add, name);
+            }
+        }
 
         return m;
     },
