@@ -163,6 +163,8 @@ var NOT_FOUND = {},
 
     comboBase: 'http://yui.yahooapis.com/combo?',
 
+    comboLength: 6000,
+
     skin: {
         defaultSkin: 'sam',
         base: 'assets/skins/',
@@ -775,6 +777,7 @@ Y.Loader = function(o) {
      * @default http://yui.yahooapis.com/combo?
      */
     this.comboBase = Y.Env.meta.comboBase;
+    this.comboLength = Y.Env.meta.comboLength;
 
     /**
      * If configured, YUI JS resources will use the combo
@@ -1934,6 +1937,10 @@ Y.Loader.prototype = {
 
         var s, len, i, m, url, self=this, type=this.loadType, fn, msg, attr,
             callback=function(o) {
+
+                this._combineToGo--;
+                if (this._combineToGo) return;
+
                 this._combineComplete[type] = true;
 
                 var c=this._combining, len=c.length, i;
@@ -1957,48 +1964,64 @@ Y.Loader.prototype = {
             len=s.length;
             url=this.comboBase;
 
-
+            var filecount = 0;
+            var files = {};
+            var urls = [];
             for (i=0; i<len; i=i+1) {
                 m = this.getModule(s[i]);
                 // Do not try to combine non-yui JS
                 if (m && (m.type === type) && !m.ext) {
-                    url += this.root + m.path;
-                    if (i < len-1) {
-                        url += '&';
-                    }
-
                     this._combining.push(s[i]);
+
+                    if (files[m.path]) continue;
+
+                    if (filecount > 0) url += '&';
+                    url += this.root + m.path;
+
+                    files[m.path] = true;
+                    filecount++;
+
+                    // watch the url length
+                    if (url.length > this.comboLength) {
+                        urls.push(url);
+
+                        // building new url
+                        filecount = 0;
+                        url=this.comboBase;
+                    }
                 }
             }
+            if (filecount > 0) urls.push(url);
 
             if (this._combining.length) {
+                len=urls.length;
+                this._combineToGo = len;
+                for (i=0; i<len; i=i+1) {
+                    url = urls[i];
+                    // if (m.type === CSS) {
+                    if (type === CSS) {
+                        fn = Y.Get.css;
+                        attr = self.cssAttributes;
+                    } else {
+                        fn = Y.Get.script;
+                        attr = self.jsAttributes;
+                    }
 
-
-                // if (m.type === CSS) {
-                if (type === CSS) {
-                    fn = Y.Get.css;
-                    attr = this.cssAttributes;
-                } else {
-                    fn = Y.Get.script;
-                    attr = this.jsAttributes;
+                    // @TODO get rid of the redundant Get code
+                    fn(this._filter(url), {
+                        data: this._loading,
+                        onSuccess: callback,
+                        onFailure: this._onFailure,
+                        onTimeout: this._onTimeout,
+                        insertBefore: this.insertBefore,
+                        charset: this.charset,
+                        attributes: attr,
+                        timeout: this.timeout,
+                        autopurge: false,
+                        context: self 
+                    });
                 }
-
-                // @TODO get rid of the redundant Get code
-                fn(this._filter(url), {
-                    data: this._loading,
-                    onSuccess: callback,
-                    onFailure: this._onFailure,
-                    onTimeout: this._onTimeout,
-                    insertBefore: this.insertBefore,
-                    charset: this.charset,
-                    attributes: attr,
-                    timeout: this.timeout,
-                    autopurge: false,
-                    context: self 
-                });
-
                 return;
-
             } else {
                 this._combineComplete[type] = true;
             }
