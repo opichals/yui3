@@ -1272,12 +1272,19 @@ Y.Loader.prototype = {
      * in order to load the requested module
      * @method getRequires
      * @param mod The module definition from moduleInfo
+     * @param parsed A hash to avoid multiple module getRequires run
      */
-    getRequires: function(mod) {
+    getRequires: function(mod, parsed) {
 
         if (!mod || mod._parsed) {
             return NO_REQUIREMENTS;
         }
+
+        parsed = parsed || {};
+        if (parsed[mod.name]) {
+            return NO_REQUIREMENTS;
+        }
+        parsed[mod.name] = mod;
 
         if (!this.dirty && mod.expanded) {
             // Y.log('already expanded');
@@ -1295,7 +1302,7 @@ Y.Loader.prototype = {
             // Y.log(mod.name + ' requiring ' + r[i]);
             d.push(r[i]);
             m = this.getModule(r[i]);
-            add = this.getRequires(m);
+            add = this.getRequires(m, parsed);
             for (j=0;j<add.length;j=j+1) {
                 d.push(add[j]);
             }
@@ -1308,7 +1315,7 @@ Y.Loader.prototype = {
                 // Y.log(mod.name + ' requiring ' + r[i]);
                 d.push(r[i]);
                 m = this.getModule(r[i]);
-                add = this.getRequires(m);
+                add = this.getRequires(m, parsed);
                 for (j=0;j<add.length;j=j+1) {
                     d.push(add[j]);
                 }
@@ -1318,7 +1325,7 @@ Y.Loader.prototype = {
         if (o && this.loadOptional) {
             for (i=0; i<o.length; i=i+1) {
                 d.push(o[i]);
-                add = this.getRequires(info[o[i]]);
+                add = this.getRequires(info[o[i]], parsed);
                 for (j=0;j<add.length;j=j+1) {
                     d.push(add[j]);
                 }
@@ -1372,11 +1379,12 @@ Y.Loader.prototype = {
      */
     calculate: function(o, type) {
         if (o || type || this.dirty) {
+            p = {};
             this._config(o);
             this._setup();
-            this._explode();
+            this._explode(p);
             if (this.allowRollup && !this.combine) {
-                this._rollup();
+                this._rollup(p);
             }
             this._reduce();
             this._sort();
@@ -1463,9 +1471,10 @@ Y.Loader.prototype = {
      * dependencies.  Expands the required list to include all 
      * required modules.  Called by calculate()
      * @method _explode
+     * @param parsed A hash to avoid multiple module getRequires run
      * @private
      */
-    _explode: function() {
+    _explode: function(parsed) {
 
         var r = this.required, m, reqs;
 
@@ -1483,11 +1492,11 @@ Y.Loader.prototype = {
 
                 if (expound) {
                     r[expound] = this.getModule(expound);
-                    reqs = this.getRequires(r[expound]);
+                    reqs = this.getRequires(r[expound], parsed);
                     Y.mix(r, Y.Array.hash(reqs));
                 }
 
-                reqs = this.getRequires(m);
+                reqs = this.getRequires(m, parsed);
 
                 // Y.log('via explode: ' + reqs);
                 Y.mix(r, Y.Array.hash(reqs));
@@ -1546,9 +1555,10 @@ Y.Loader.prototype = {
      * help reduce the total number of connections required.  Called
      * by calculate()
      * @method _rollup
+     * @param parsed A hash to avoid multiple module getRequires run
      * @private
      */
-    _rollup: function() {
+    _rollup: function(parsed) {
         var i, j, m, s, rollups={}, r=this.required, roll,
             info = this.moduleInfo, rolled, c;
 
@@ -1619,7 +1629,7 @@ Y.Loader.prototype = {
                             rolled = true;
 
                             // expand the rollup's dependencies
-                            this.getRequires(m);
+                            this.getRequires(m, parsed);
                         }
                     }
                 }
