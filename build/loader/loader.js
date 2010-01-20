@@ -1296,6 +1296,8 @@ Y.Loader.prototype = {
         for (i=0; i<r.length; i=i+1) {
             d.push(r[i]);
             m = this.getModule(r[i]);
+            if (parsed[m.name]) continue; // quick bail
+
             add = this.getRequires(m, parsed);
             for (j=0;j<add.length;j=j+1) {
                 d.push(add[j]);
@@ -1308,6 +1310,8 @@ Y.Loader.prototype = {
             for (i=0; i<r.length; i=i+1) {
                 d.push(r[i]);
                 m = this.getModule(r[i]);
+                if (parsed[m.name]) continue; // quick bail
+
                 add = this.getRequires(m, parsed);
                 for (j=0;j<add.length;j=j+1) {
                     d.push(add[j]);
@@ -1318,6 +1322,8 @@ Y.Loader.prototype = {
         if (o && this.loadOptional) {
             for (i=0; i<o.length; i=i+1) {
                 d.push(o[i]);
+                if (parsed[o[i]]) continue; // quick bail
+
                 add = this.getRequires(info[o[i]], parsed);
                 for (j=0;j<add.length;j=j+1) {
                     d.push(add[j]);
