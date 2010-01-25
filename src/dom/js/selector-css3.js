@@ -124,6 +124,10 @@ Y.mix(Y.Selector.pseudos, {
     },
 
     'checked': function(node) {
+        var selectNode = node.parentNode;
+        if (node.tagName.toUpperCase() === 'OPTION' && selectNode) {
+            return selectNode.options[selectNode.selectedIndex] === node;
+        }
         return node.checked === true;
     }
 });
