@@ -809,7 +809,7 @@ Y.Loader = function(o) {
      * @property maxURLLength
      * @type int
      */
-    this.maxURLLength = (o.maxURLLength) ? Math.min(MAX_URL_LENGTH, o.maxURLLength) : MAX_URL_LENGTH;
+    this.maxURLLength = MAX_URL_LENGTH;
 
     /**
      * Ignore modules registered on the YUI global
@@ -1072,6 +1072,8 @@ Y.Loader.prototype = {
                             }
                         }
 
+                    } else if (i == 'maxURLLength') {
+                        this[i] = Math.min(this[i], o.maxURLLength);
                     } else {
                         this[i] = val;
                     }
