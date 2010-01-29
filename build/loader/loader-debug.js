@@ -1329,7 +1329,7 @@ Y.Loader.prototype = {
             // Y.log(mod.name + ' requiring ' + r[i]);
             d.push(r[i]);
             m = this.getModule(r[i]);
-            if (parsed[m.name]) continue; // quick bail
+            if (!m || parsed[m.name]) continue; // quick bail
 
             add = this.getRequires(m, parsed);
             for (j=0;j<add.length;j=j+1) {
@@ -1344,7 +1344,7 @@ Y.Loader.prototype = {
                 // Y.log(mod.name + ' requiring ' + r[i]);
                 d.push(r[i]);
                 m = this.getModule(r[i]);
-                if (parsed[m.name]) continue; // quick bail
+                if (!m || parsed[m.name]) continue; // quick bail
 
                 add = this.getRequires(m, parsed);
                 for (j=0;j<add.length;j=j+1) {
