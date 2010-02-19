@@ -1,3 +1,34 @@
+3.1.0
+
+* As the final step in the destroy phase, Base now does a detachAll() to avoid invoking listeners 
+  which may be waiting to be in an async. step which occurs after destruction.
+
+* "init" and "destroy" events are now publish with the defaultTargetOnly property set to true
+
+* Added support for MyClass.EVENT_PREFIX to allow developers
+  to define their own event prefix
+
+* Made "init" and "destroy" events fireOnce:true (along with
+  "render" in Widget), so that subscriptions made after the 
+  events are fired, are notified immediately.
+
+* Dynamic and non-dynamically built classes now have their 
+  extensions instantiated the same way - during _initHierarchy.
+
+* Updated ATTRS handling for Base.build, so that ATTRS are 
+  also aggregated at the attribute configuration object level, 
+  allowing extensions to add to, or overwrite, attribute 
+  configuration properties on the host.
+
+* Added sugar Base.create and Base.mix methods on top of 
+  Base.build, to simplify the 2 main use cases: 
+
+  1). Creating a completely new class which uses extensions.
+  2). Mixing in extensions to an existing class.
+
+* Documented non-attribute on, after, bubbleTargets and plugins 
+  property support in the Base constructor config argument 
+
 3.0.0
 
 * Fixed hasImpl method on built classes, to look up the class
