@@ -239,6 +239,8 @@
                 defaultFn: this._defDestroyFn
             });
             this.fire(DESTROY);
+
+            this.detachAll();
             return this;
         },
 
@@ -271,7 +273,6 @@
             if (this._destroyPlugins) {
                 this._destroyPlugins();
             }
-            this.detachAll();
             this._set(DESTROYED, true);
         },
 
