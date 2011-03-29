@@ -240,6 +240,20 @@ YUI.add('io-base', function(Y) {
     }
 
 
+    function _ioCloneResult(o, c, d) {
+        var a  = ['status', 'statusText', 'responseText', 'responseXML'],
+            r = c.arguments ? { id: o.id, arguments: c.arguments } : { id: o.id },
+            j, l;
+
+        for (j = 0, l = a.length; j < l; j++) {
+            r[a[j]] = d[a[j]];
+        }
+
+        r.getAllResponseHeaders = function() { return d.getAllResponseHeaders(); };
+        r.getResponseHeader = function(h) { return d.getResponseHeader(h); };
+        return r;
+    }
+
    /**
     * @description Fires event "io:complete" and creates, fires a
     * transaction-specific "complete" event, if config.on.complete is
@@ -254,7 +268,7 @@ YUI.add('io-base', function(Y) {
     * @return void
     */
     function _ioComplete(o, c) {
-        var r = o.e ? { status: 0, statusText: o.e } : o.c,
+        var r = _ioCloneResult(o, c, o.e ? { status: 0, statusText: o.e } : o.c),
             a = c.arguments;
 
         if (a) {
@@ -724,16 +738,6 @@ YUI.add('io-base', function(Y) {
             // with no Content-Length header defined.
             o.c.send(c.data || '');
             if (s) {
-                d = o.c;
-                a  = ['status', 'statusText', 'responseText', 'responseXML'];
-                r = c.arguments ? { id: o.id, arguments: c.arguments } : { id: o.id };
-
-                for (j = 0; j < 4; j++) {
-                    r[a[j]] = o.c[a[j]];
-                }
-
-                r.getAllResponseHeaders = function() { return d.getAllResponseHeaders(); };
-                r.getResponseHeader = function(h) { return d.getResponseHeader(h); };
                 _ioComplete(o, c);
                 _handleResponse(o, c);
 
@@ -805,5 +809,4 @@ YUI.add('io-base', function(Y) {
     Y.io.http = _io;
 
 
-
-}, '@VERSION@' ,{optional:['querystring-stringify-simple'], requires:['event-custom-base']});
+}, '@VERSION@' ,{requires:['event-custom-base'], optional:['querystring-stringify-simple']});

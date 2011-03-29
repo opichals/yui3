@@ -297,5 +297,4 @@ YUI.add('io-xdr', function(Y) {
     });
 
 
-
 }, '@VERSION@' ,{requires:['io-base','datatype-xml']});
