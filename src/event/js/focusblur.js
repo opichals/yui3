@@ -29,13 +29,15 @@ function define(type, proxy, directEvent) {
 
         _proxy: function (e, notifier, delegate) {
             var node       = e.target,
-                notifiers  = node.getData(nodeDataKey),
+                notifiers  = node && node.getData(nodeDataKey),
                 yuid       = Y.stamp(e.currentTarget._node),
                 defer      = (useActivate || e.target !== e.currentTarget),
                 sub        = notifier.handle.sub,
                 filterArgs = [node, e].concat(sub.args || []),
                 directSub;
                 
+            if (!node) return; // nothing to focus to
+
             notifier.currentTarget = (delegate) ? node : e.currentTarget;
             notifier.container     = (delegate) ? e.currentTarget : null;
 
